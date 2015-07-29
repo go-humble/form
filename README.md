@@ -46,8 +46,18 @@ go get -u github.com/gopherjs/gopherjs
 ```
 
 
+Development Status
+------------------
+
+Form is still under development and is not yet ready for use. The first usable
+release will be version 0.1.0. If you are curious, feel free to poke around,
+but don't expect anything to work yet.
+
+
 Quickstart Guide
 ----------------
+
+Coming soon!
 
 
 Testing
