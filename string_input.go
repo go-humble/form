@@ -3,6 +3,8 @@ package form
 import (
 	"fmt"
 	"strconv"
+
+	"honnef.co/go/js/dom"
 )
 
 type StringInput struct {
@@ -10,13 +12,10 @@ type StringInput struct {
 	defaultInput
 }
 
-func NewStringInput(name string, value string, typ InputType) *StringInput {
+func NewStringInput(el *dom.HTMLInputElement) *StringInput {
 	return &StringInput{
-		value: value,
-		defaultInput: defaultInput{
-			name: name,
-			typ:  typ,
-		},
+		value:        el.Value,
+		defaultInput: newDefaultInput(el),
 	}
 }
 

@@ -1,5 +1,7 @@
 package form
 
+import "time"
+
 type InputType string
 
 const (
@@ -30,7 +32,7 @@ const (
 
 type Input interface {
 	Name() string
-	Value() string
+	RawValue() string
 	Type() InputType
 }
 
@@ -50,24 +52,6 @@ type Booler interface {
 	Bool() (bool, error)
 }
 
-type defaultInput struct {
-	name     string
-	rawValue string
-	typ      InputType
-}
-
-func (i defaultInput) Name() string {
-	return i.name
-}
-
-func (i defaultInput) Value() string {
-	return i.rawValue
-}
-
-func (i defaultInput) Type() InputType {
-	return i.typ
-}
-
-func (i defaultInput) String() (string, error) {
-	return i.rawValue, nil
+type Timer interface {
+	Time() (time.Time, error)
 }

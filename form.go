@@ -46,14 +46,12 @@ func Parse(formElement *dom.HTMLFormElement) (*Form, error) {
 		switch inputType {
 		case InputDefault, InputEmail, InputHidden, InputPassword, InputSearch,
 			InputTel, InputText, InputURL:
-			form.Inputs[inputEl.Name] = NewStringInput(
-				inputEl.Name, inputEl.Value, inputType)
+			form.Inputs[inputEl.Name] = NewStringInput(inputEl)
 		default:
 			// If the type is unknown or not supported, just store it as a string
 			// input. If you try to convert it to something that we can't convert
 			// it to, form will return a readable error.
-			form.Inputs[inputEl.Name] = NewStringInput(
-				inputEl.Name, inputEl.Value, inputType)
+			form.Inputs[inputEl.Name] = NewStringInput(inputEl)
 		}
 	}
 	return form, nil
