@@ -44,7 +44,7 @@ func main() {
 			<input type="text" name="text" value="This is some text." >
 			<input type="url" name="url" value="http://example.com" >
 			</form>`)
-		formEl := container.QuerySelector("form").(*dom.HTMLFormElement)
+		formEl := container.QuerySelector("form")
 		form, err := form.Parse(formEl)
 		assertNoError(assert, err, "")
 		expectedValues := map[string]string{
@@ -75,7 +75,7 @@ func main() {
 			<input type="text" name="text" value="789" >
 			<input type="number" name="number" value="123456789" >
 			</form>`)
-		formEl := container.QuerySelector("form").(*dom.HTMLFormElement)
+		formEl := container.QuerySelector("form")
 		form, err := form.Parse(formEl)
 		assertNoError(assert, err, "")
 		expectedValues := map[string]int{
@@ -101,7 +101,7 @@ func main() {
 			<input type="text" name="text" value="789.6" >
 			<input type="number" name="number" value="123456789.7" >
 			</form>`)
-		formEl := container.QuerySelector("form").(*dom.HTMLFormElement)
+		formEl := container.QuerySelector("form")
 		form, err := form.Parse(formEl)
 		assertNoError(assert, err, "")
 		expectedValues := map[string]float64{
@@ -129,7 +129,7 @@ func main() {
 			<input type="checkbox" name="checkbox-false" >
 			<input type="radio" name="radio-false" >
 			</form>`)
-		formEl := container.QuerySelector("form").(*dom.HTMLFormElement)
+		formEl := container.QuerySelector("form")
 		form, err := form.Parse(formEl)
 		assertNoError(assert, err, "")
 		expectedValues := map[string]bool{
@@ -148,32 +148,32 @@ func main() {
 		}
 	})
 
-	// qunit.Test("GetTime", func(assert qunit.QUnitAssert) {
-	// 	defer reset()
-	// 	// Create a form with some inputs and values. All the input types here
-	// 	// should be convertible to floats via GetFloat.
-	// 	container.SetInnerHTML(`<form>
-	// 		<input name="date" type="date" value="1992-09-29" >
-	// 		<input name="datetime" type="datetime" value="1985-12-03T23:59:34-08:00" >
-	// 		<input name="datetime-local" type="datetime-local" value="1985-04-12T23:20:50.52" >
-	// 		</form>`)
-	// 	formEl := container.QuerySelector("form").(*dom.HTMLFormElement)
-	// 	form, err := form.Parse(formEl)
-	// 	assertNoError(assert, err, "")
-	// 	rfc3339Date := "2006-01-02"
-	// 	rfc3339DatetimeLocal := "2006-01-02T15:04:05.999999999"
-	// 	expectedValues := map[string]time.Time{
-	// 		"date":           mustParseTime(rfc3339Date, "1992-09-29"),
-	// 		"datetime":       mustParseTime(time.RFC3339, "1985-12-03T23:59:34-08:00"),
-	// 		"datetime-local": mustParseTime(rfc3339DatetimeLocal, "1985-04-12T23:20:50.52"),
-	// 	}
-	// 	// Check that the parsed value for each input is correct.
-	// 	for name, expectedValue := range expectedValues {
-	// 		got, err := form.GetTime(name)
-	// 		assertNoError(assert, err, "Error for field: "+name)
-	// 		assert.Equal(got, expectedValue, "Incorrect value for field: "+name)
-	// 	}
-	// })
+	qunit.Test("GetTime", func(assert qunit.QUnitAssert) {
+		defer reset()
+		// Create a form with some inputs and values. All the input types here
+		// should be convertible to time.Time via GetTime.
+		container.SetInnerHTML(`<form>
+			<input name="date" type="date" value="1992-09-29" >
+			<input name="datetime" type="datetime" value="1985-12-03T23:59:34-08:00" >
+			<input name="datetime-local" type="datetime-local" value="1985-04-12T23:20:50.52" >
+			</form>`)
+		formEl := container.QuerySelector("form")
+		form, err := form.Parse(formEl)
+		assertNoError(assert, err, "")
+		rfc3339Date := "2006-01-02"
+		rfc3339DatetimeLocal := "2006-01-02T15:04:05.999999999"
+		expectedValues := map[string]time.Time{
+			"date":           mustParseTime(rfc3339Date, "1992-09-29"),
+			"datetime":       mustParseTime(time.RFC3339, "1985-12-03T23:59:34-08:00"),
+			"datetime-local": mustParseTime(rfc3339DatetimeLocal, "1985-04-12T23:20:50.52"),
+		}
+		// Check that the parsed value for each input is correct.
+		for name, expectedValue := range expectedValues {
+			got, err := form.GetTime(name)
+			assertNoError(assert, err, "Error for field: "+name)
+			assert.DeepEqual(got, expectedValue, "Incorrect value for field: "+name)
+		}
+	})
 }
 
 func mustParseTime(layout string, value string) time.Time {

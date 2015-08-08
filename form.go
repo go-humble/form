@@ -7,6 +7,7 @@ package form
 
 import (
 	"fmt"
+	"time"
 
 	"honnef.co/go/js/dom"
 )
@@ -29,11 +30,15 @@ type Form struct {
 	Inputs map[string]*Input
 }
 
-func Parse(formElement *dom.HTMLFormElement) (*Form, error) {
+func Parse(formElement dom.Element) (*Form, error) {
 	form := &Form{
 		Inputs: map[string]*Input{},
 	}
-	for _, el := range formElement.Elements() {
+	htmlFormElement, ok := formElement.(*dom.HTMLFormElement)
+	if !ok {
+		return nil, fmt.Errorf("form: Argument to Parse must be a *dom.HTMLFormElement. (Got %T)", formElement)
+	}
+	for _, el := range htmlFormElement.Elements() {
 		// Cast the element to an input element.
 		inputEl, ok := el.(*dom.HTMLInputElement)
 		if !ok {
@@ -50,7 +55,7 @@ func (form *Form) GetString(name string) (string, error) {
 	if !found {
 		return "", NewInputNotFoundError(name)
 	}
-	return input.String(), nil
+	return input.RawValue, nil
 }
 
 func (form *Form) GetInt(name string) (int, error) {
@@ -77,10 +82,10 @@ func (form *Form) GetBool(name string) (bool, error) {
 	return input.Bool()
 }
 
-// func (form *Form) GetTime(name string) (time.Time, error) {
-// 	input, found := form.Inputs[name]
-// 	if !found {
-// 		return time.Time{}, NewInputNotFoundError(name)
-// 	}
-// 	return input.Time()
-// }
+func (form *Form) GetTime(name string) (time.Time, error) {
+	input, found := form.Inputs[name]
+	if !found {
+		return time.Time{}, NewInputNotFoundError(name)
+	}
+	return input.Time()
+}
