@@ -26,12 +26,12 @@ func (e InputNotFoundError) Error() string {
 }
 
 type Form struct {
-	Inputs map[string]Input
+	Inputs map[string]*Input
 }
 
 func Parse(formElement *dom.HTMLFormElement) (*Form, error) {
 	form := &Form{
-		Inputs: map[string]Input{},
+		Inputs: map[string]*Input{},
 	}
 	for _, el := range formElement.Elements() {
 		// Cast the element to an input element.
@@ -40,19 +40,7 @@ func Parse(formElement *dom.HTMLFormElement) (*Form, error) {
 			// Skip elements which are not input elements.
 			continue
 		}
-		// Depending on the type of the form element, we want to handle it
-		// differently.
-		inputType := InputType(inputEl.Type)
-		switch inputType {
-		case InputDefault, InputEmail, InputHidden, InputPassword, InputSearch,
-			InputTel, InputText, InputURL:
-			form.Inputs[inputEl.Name] = NewStringInput(inputEl)
-		default:
-			// If the type is unknown or not supported, just store it as a string
-			// input. If you try to convert it to something that we can't convert
-			// it to, form will return a readable error.
-			form.Inputs[inputEl.Name] = NewStringInput(inputEl)
-		}
+		form.Inputs[inputEl.Name] = NewInput(inputEl)
 	}
 	return form, nil
 }
@@ -62,12 +50,7 @@ func (form *Form) GetString(name string) (string, error) {
 	if !found {
 		return "", NewInputNotFoundError(name)
 	}
-	stringer, ok := input.(Stringer)
-	if !ok {
-		return "", fmt.Errorf("form: Cannot get string for input type %s. (%T does not implement Stringer)",
-			input.Type(), input)
-	}
-	return stringer.String()
+	return input.String(), nil
 }
 
 func (form *Form) GetInt(name string) (int, error) {
@@ -75,12 +58,7 @@ func (form *Form) GetInt(name string) (int, error) {
 	if !found {
 		return 0, NewInputNotFoundError(name)
 	}
-	inter, ok := input.(Inter)
-	if !ok {
-		return 0, fmt.Errorf("form: Cannot get int for input type %s. (%T does not implement Inter)",
-			input.Type(), input)
-	}
-	return inter.Int()
+	return input.Int()
 }
 
 func (form *Form) GetFloat(name string) (float64, error) {
@@ -88,12 +66,7 @@ func (form *Form) GetFloat(name string) (float64, error) {
 	if !found {
 		return 0, NewInputNotFoundError(name)
 	}
-	floater, ok := input.(Floater)
-	if !ok {
-		return 0, fmt.Errorf("form: Cannot get float for input type %s. (%T does not implement Floater)",
-			input.Type(), input)
-	}
-	return floater.Float()
+	return input.Float()
 }
 
 func (form *Form) GetBool(name string) (bool, error) {
@@ -101,10 +74,13 @@ func (form *Form) GetBool(name string) (bool, error) {
 	if !found {
 		return false, NewInputNotFoundError(name)
 	}
-	booler, ok := input.(Booler)
-	if !ok {
-		return false, fmt.Errorf("form: Cannot get bool for input type %s. (%T does not implement Booler)",
-			input.Type(), input)
-	}
-	return booler.Bool()
+	return input.Bool()
 }
+
+// func (form *Form) GetTime(name string) (time.Time, error) {
+// 	input, found := form.Inputs[name]
+// 	if !found {
+// 		return time.Time{}, NewInputNotFoundError(name)
+// 	}
+// 	return input.Time()
+// }

@@ -1,7 +1,5 @@
 package form
 
-import "time"
-
 type InputType string
 
 const (
@@ -29,29 +27,3 @@ const (
 	InputURL           InputType = "url"
 	InputWeek          InputType = "week"
 )
-
-type Input interface {
-	Name() string
-	RawValue() string
-	Type() InputType
-}
-
-type Stringer interface {
-	String() (string, error)
-}
-
-type Inter interface {
-	Int() (int, error)
-}
-
-type Floater interface {
-	Float() (float64, error)
-}
-
-type Booler interface {
-	Bool() (bool, error)
-}
-
-type Timer interface {
-	Time() (time.Time, error)
-}
