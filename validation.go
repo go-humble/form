@@ -127,3 +127,77 @@ func (val *InputValidation) validateInt(validateFunc func(value int) bool, forma
 	}
 	return val
 }
+
+func lessFloatFunc(limit float64) func(float64) bool {
+	return func(value float64) bool {
+		return value < limit
+	}
+}
+
+func lessOrEqualFloatFunc(limit float64) func(float64) bool {
+	return func(value float64) bool {
+		return value <= limit
+	}
+}
+
+func greaterFloatFunc(limit float64) func(float64) bool {
+	return func(value float64) bool {
+		return value > limit
+	}
+}
+
+func greaterOrEqualFloatFunc(limit float64) func(float64) bool {
+	return func(value float64) bool {
+		return value >= limit
+	}
+}
+
+func (val *InputValidation) LessFloat(limit float64) *InputValidation {
+	return val.LessFloatf(limit, "%s must be less than %f.", val.InputName, limit)
+}
+
+func (val *InputValidation) LessFloatf(limit float64, format string, args ...interface{}) *InputValidation {
+	return val.validateFloat(lessFloatFunc(limit), format, args...)
+}
+
+func (val *InputValidation) LessOrEqualFloat(limit float64) *InputValidation {
+	return val.LessOrEqualFloatf(limit, "%s must be less than or equal to %f.", val.InputName, limit)
+}
+
+func (val *InputValidation) LessOrEqualFloatf(limit float64, format string, args ...interface{}) *InputValidation {
+	return val.validateFloat(lessOrEqualFloatFunc(limit), format, args...)
+}
+
+func (val *InputValidation) GreaterFloat(limit float64) *InputValidation {
+	return val.GreaterFloatf(limit, "%s must be greater than %f.", val.InputName, limit)
+}
+
+func (val *InputValidation) GreaterFloatf(limit float64, format string, args ...interface{}) *InputValidation {
+	return val.validateFloat(greaterFloatFunc(limit), format, args...)
+}
+
+func (val *InputValidation) GreaterOrEqualFloat(limit float64) *InputValidation {
+	return val.GreaterOrEqualFloatf(limit, "%s must be greater than or equal to %f.", val.InputName, limit)
+}
+
+func (val *InputValidation) GreaterOrEqualFloatf(limit float64, format string, args ...interface{}) *InputValidation {
+	return val.validateFloat(greaterOrEqualFloatFunc(limit), format, args...)
+}
+
+func (val *InputValidation) validateFloat(validateFunc func(value float64) bool, format string, args ...interface{}) *InputValidation {
+	// If the input does not exist or is empty, skip this validation.
+	if val.Input == nil || val.Input.RawValue == "" {
+		return val
+	}
+	// Attempt to convert the input value to an integer.
+	floatVal, err := val.Input.Float()
+	if err != nil {
+		val.AddError("%s must be a number.", val.InputName)
+		return val
+	}
+	// Call validateFunc and if it returns false, add the appropriate error.
+	if !validateFunc(floatVal) {
+		val.AddError(format, args...)
+	}
+	return val
+}
