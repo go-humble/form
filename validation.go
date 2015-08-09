@@ -110,6 +110,23 @@ func (val *InputValidation) GreaterOrEqualf(limit int, format string, args ...in
 	return val.validateInt(greaterOrEqualFunc(limit), format, args...)
 }
 
+func (val *InputValidation) IsInt() *InputValidation {
+	return val.IsIntf("%s must be an integer.", val.InputName)
+}
+
+func (val *InputValidation) IsIntf(format string, args ...interface{}) *InputValidation {
+	// If the input does not exist or is empty, skip this validation.
+	if val.Input == nil || val.Input.RawValue == "" {
+		return val
+	}
+	// Attempt to convert the input value to a int and if the conversion fails,
+	// add a validation error.
+	if _, err := val.Input.Int(); err != nil {
+		val.AddError(format, args...)
+	}
+	return val
+}
+
 func (val *InputValidation) validateInt(validateFunc func(value int) bool, format string, args ...interface{}) *InputValidation {
 	// If the input does not exist or is empty, skip this validation.
 	if val.Input == nil || val.Input.RawValue == "" {
@@ -184,12 +201,29 @@ func (val *InputValidation) GreaterOrEqualFloatf(limit float64, format string, a
 	return val.validateFloat(greaterOrEqualFloatFunc(limit), format, args...)
 }
 
+func (val *InputValidation) IsFloat() *InputValidation {
+	return val.IsFloatf("%s must be a number.", val.InputName)
+}
+
+func (val *InputValidation) IsFloatf(format string, args ...interface{}) *InputValidation {
+	// If the input does not exist or is empty, skip this validation.
+	if val.Input == nil || val.Input.RawValue == "" {
+		return val
+	}
+	// Attempt to convert the input value to a float and if the conversion fails,
+	// add a validation error.
+	if _, err := val.Input.Float(); err != nil {
+		val.AddError(format, args...)
+	}
+	return val
+}
+
 func (val *InputValidation) validateFloat(validateFunc func(value float64) bool, format string, args ...interface{}) *InputValidation {
 	// If the input does not exist or is empty, skip this validation.
 	if val.Input == nil || val.Input.RawValue == "" {
 		return val
 	}
-	// Attempt to convert the input value to an integer.
+	// Attempt to convert the input value to a float.
 	floatVal, err := val.Input.Float()
 	if err != nil {
 		val.AddError("%s must be a number.", val.InputName)
@@ -197,6 +231,23 @@ func (val *InputValidation) validateFloat(validateFunc func(value float64) bool,
 	}
 	// Call validateFunc and if it returns false, add the appropriate error.
 	if !validateFunc(floatVal) {
+		val.AddError(format, args...)
+	}
+	return val
+}
+
+func (val *InputValidation) IsBool() *InputValidation {
+	return val.IsBoolf("%s must be either true or false.", val.InputName)
+}
+
+func (val *InputValidation) IsBoolf(format string, args ...interface{}) *InputValidation {
+	// If the input does not exist or is empty, skip this validation.
+	if val.Input == nil || val.Input.RawValue == "" {
+		return val
+	}
+	// Attempt to convert the input to a boolean and if the conversion fails,
+	// add a validation error.
+	if _, err := val.Input.Bool(); err != nil {
 		val.AddError(format, args...)
 	}
 	return val
