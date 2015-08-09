@@ -28,6 +28,7 @@ func (e InputNotFoundError) Error() string {
 
 type Form struct {
 	Inputs map[string]*Input
+	Errors []error
 }
 
 func Parse(formElement dom.Element) (*Form, error) {
@@ -50,42 +51,46 @@ func Parse(formElement dom.Element) (*Form, error) {
 	return form, nil
 }
 
-func (form *Form) GetString(name string) (string, error) {
-	input, found := form.Inputs[name]
+func (form *Form) GetString(inputName string) (string, error) {
+	input, found := form.Inputs[inputName]
 	if !found {
-		return "", NewInputNotFoundError(name)
+		return "", NewInputNotFoundError(inputName)
 	}
 	return input.RawValue, nil
 }
 
-func (form *Form) GetInt(name string) (int, error) {
-	input, found := form.Inputs[name]
+func (form *Form) GetInt(inputName string) (int, error) {
+	input, found := form.Inputs[inputName]
 	if !found {
-		return 0, NewInputNotFoundError(name)
+		return 0, NewInputNotFoundError(inputName)
 	}
 	return input.Int()
 }
 
-func (form *Form) GetFloat(name string) (float64, error) {
-	input, found := form.Inputs[name]
+func (form *Form) GetFloat(inputName string) (float64, error) {
+	input, found := form.Inputs[inputName]
 	if !found {
-		return 0, NewInputNotFoundError(name)
+		return 0, NewInputNotFoundError(inputName)
 	}
 	return input.Float()
 }
 
-func (form *Form) GetBool(name string) (bool, error) {
-	input, found := form.Inputs[name]
+func (form *Form) GetBool(inputName string) (bool, error) {
+	input, found := form.Inputs[inputName]
 	if !found {
-		return false, NewInputNotFoundError(name)
+		return false, NewInputNotFoundError(inputName)
 	}
 	return input.Bool()
 }
 
-func (form *Form) GetTime(name string) (time.Time, error) {
-	input, found := form.Inputs[name]
+func (form *Form) GetTime(inputName string) (time.Time, error) {
+	input, found := form.Inputs[inputName]
 	if !found {
-		return time.Time{}, NewInputNotFoundError(name)
+		return time.Time{}, NewInputNotFoundError(inputName)
 	}
 	return input.Time()
+}
+
+func (form *Form) HasErrors() bool {
+	return len(form.Errors) > 0
 }

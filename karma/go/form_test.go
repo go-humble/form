@@ -174,6 +174,169 @@ func main() {
 			assert.DeepEqual(got, expectedValue, "Incorrect value for field: "+name)
 		}
 	})
+
+	qunit.Test("ValidateRequired", func(assert qunit.QUnitAssert) {
+		defer reset()
+		// Create a form with some inputs and values.
+		container.SetInnerHTML(`<form>
+			<input name="non-empty" value="foo" >
+			<input name="empty" value="" >
+			</form>`)
+		formEl := container.QuerySelector("form")
+		form, err := form.Parse(formEl)
+		assertNoError(assert, err, "")
+		// Check that a non-empty input does not add a validation error.
+		form.Validate("non-empty").Required()
+		assert.Equal(form.HasErrors(), false, "Expected form to have no errors")
+		// Check that an empty input does add a validation error with a custom
+		// message.
+		customMessage := "empty cannot be blank."
+		form.Validate("empty").Requiredf(customMessage)
+		assert.Equal(len(form.Errors), 1,
+			"Expected form to have 1 error because 'empty' is required.")
+		assert.Equal(form.Errors[0].Error(), customMessage,
+			"Custom message was not set with Requiredf")
+		// Check that a non-existing input does add a validation error.
+		form.Validate("non-existing").Required()
+		assert.Equal(len(form.Errors), 2,
+			"Expected form to have 2 errors because 'non-existing' and 'empty' are required.")
+	})
+
+	qunit.Test("ValidateLess", func(assert qunit.QUnitAssert) {
+		defer reset()
+		// Create a form with some inputs and values.
+		container.SetInnerHTML(`<form>
+			<input name="valid" value="5" >
+			<input name="invalid" value="10" >
+			<input name="non-integer" value="foo" >
+			</form>`)
+		formEl := container.QuerySelector("form")
+		form, err := form.Parse(formEl)
+		assertNoError(assert, err, "")
+		// Check that a valid input does not add any validation errors.
+		form.Validate("valid").Less(10)
+		assert.Equal(form.HasErrors(), false, "Expected form to have no errors")
+		// Check that a non-existing input does not add any validation errors.
+		form.Validate("non-existing").Less(10)
+		assert.Equal(form.HasErrors(), false, "Expected form to have no errors")
+		// Check that an invalid field does add a validation error with a custom
+		// message.
+		customMessage := "invalid input was invalid becase it was not less than 10."
+		form.Validate("invalid").Lessf(10, customMessage)
+		assert.Equal(len(form.Errors), 1,
+			"Expected form to have 1 error because 'invalid' is not less than 10.")
+		assert.Equal(form.Errors[0].Error(), customMessage,
+			"Custom message was not set with Requiredf")
+		// Check that a input which is not an integer adds the correct error
+		// message.
+		form.Validate("non-integer").Less(10)
+		assert.Equal(len(form.Errors), 2,
+			"Expected form to have 2 error because 'non-integer' is not an integer.")
+		assert.Equal(form.Errors[1].Error(), "non-integer must be an integer.",
+			"Error was not added when input was a non-integer.")
+	})
+
+	qunit.Test("ValidateLessOrEqual", func(assert qunit.QUnitAssert) {
+		defer reset()
+		// Create a form with some inputs and values.
+		container.SetInnerHTML(`<form>
+			<input name="valid" value="5" >
+			<input name="invalid" value="11" >
+			<input name="non-integer" value="foo" >
+			</form>`)
+		formEl := container.QuerySelector("form")
+		form, err := form.Parse(formEl)
+		assertNoError(assert, err, "")
+		// Check that a valid input does not add any validation errors.
+		form.Validate("valid").LessOrEqual(10)
+		assert.Equal(form.HasErrors(), false, "Expected form to have no errors")
+		// Check that a non-existing input does not add any validation errors.
+		form.Validate("non-existing").LessOrEqual(10)
+		assert.Equal(form.HasErrors(), false, "Expected form to have no errors")
+		// Check that an invalid field does add a validation error with a custom
+		// message.
+		customMessage := "invalid input was invalid becase it was not less than or equal to 10."
+		form.Validate("invalid").LessOrEqualf(10, customMessage)
+		assert.Equal(len(form.Errors), 1,
+			"Expected form to have 1 error because 'invalid' is not less than or equal to 10.")
+		assert.Equal(form.Errors[0].Error(), customMessage,
+			"Custom message was not set with Requiredf")
+		// Check that a input which is not an integer adds the correct error
+		// message.
+		form.Validate("non-integer").LessOrEqual(10)
+		assert.Equal(len(form.Errors), 2,
+			"Expected form to have 2 error because 'non-integer' is not an integer.")
+		assert.Equal(form.Errors[1].Error(), "non-integer must be an integer.",
+			"Error was not added when input was a non-integer.")
+	})
+
+	qunit.Test("ValidateGreater", func(assert qunit.QUnitAssert) {
+		defer reset()
+		// Create a form with some inputs and values.
+		container.SetInnerHTML(`<form>
+			<input name="valid" value="15" >
+			<input name="invalid" value="10" >
+			<input name="non-integer" value="foo" >
+			</form>`)
+		formEl := container.QuerySelector("form")
+		form, err := form.Parse(formEl)
+		assertNoError(assert, err, "")
+		// Check that a valid input does not add any validation errors.
+		form.Validate("valid").Greater(10)
+		assert.Equal(form.HasErrors(), false, "Expected form to have no errors")
+		// Check that a non-existing input does not add any validation errors.
+		form.Validate("non-existing").Greater(10)
+		assert.Equal(form.HasErrors(), false, "Expected form to have no errors")
+		// Check that an invalid field does add a validation error with a custom
+		// message.
+		customMessage := "invalid input was invalid becase it was not greater than 10."
+		form.Validate("invalid").Greaterf(10, customMessage)
+		assert.Equal(len(form.Errors), 1,
+			"Expected form to have 1 error because 'invalid' is not greater than 10.")
+		assert.Equal(form.Errors[0].Error(), customMessage,
+			"Custom message was not set with Requiredf")
+		// Check that a input which is not an integer adds the correct error
+		// message.
+		form.Validate("non-integer").Greater(10)
+		assert.Equal(len(form.Errors), 2,
+			"Expected form to have 2 error because 'non-integer' is not an integer.")
+		assert.Equal(form.Errors[1].Error(), "non-integer must be an integer.",
+			"Error was not added when input was a non-integer.")
+	})
+
+	qunit.Test("ValidateGreaterOrEqual", func(assert qunit.QUnitAssert) {
+		defer reset()
+		// Create a form with some inputs and values.
+		container.SetInnerHTML(`<form>
+			<input name="valid" value="15" >
+			<input name="invalid" value="9" >
+			<input name="non-integer" value="foo" >
+			</form>`)
+		formEl := container.QuerySelector("form")
+		form, err := form.Parse(formEl)
+		assertNoError(assert, err, "")
+		// Check that a valid input does not add any validation errors.
+		form.Validate("valid").GreaterOrEqual(10)
+		assert.Equal(form.HasErrors(), false, "Expected form to have no errors")
+		// Check that a non-existing input does not add any validation errors.
+		form.Validate("non-existing").GreaterOrEqual(10)
+		assert.Equal(form.HasErrors(), false, "Expected form to have no errors")
+		// Check that an invalid field does add a validation error with a custom
+		// message.
+		customMessage := "invalid input was invalid becase it was not greater than or equal to 10."
+		form.Validate("invalid").GreaterOrEqualf(10, customMessage)
+		assert.Equal(len(form.Errors), 1,
+			"Expected form to have 1 error because 'invalid' is not greater than or equal to 10.")
+		assert.Equal(form.Errors[0].Error(), customMessage,
+			"Custom message was not set with Requiredf")
+		// Check that a input which is not an integer adds the correct error
+		// message.
+		form.Validate("non-integer").GreaterOrEqual(10)
+		assert.Equal(len(form.Errors), 2,
+			"Expected form to have 2 error because 'non-integer' is not an integer.")
+		assert.Equal(form.Errors[1].Error(), "non-integer must be an integer.",
+			"Error was not added when input was a non-integer.")
+	})
 }
 
 func mustParseTime(layout string, value string) time.Time {
