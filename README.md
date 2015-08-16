@@ -38,26 +38,125 @@ Install form like you would any other go package:
 go get github.com/go-humble/form
 ```
 
-You will also need to install gopherjs if you don't already have it. The latest version is
-recommended. Install gopherjs with:
+You will also need to install gopherjs if you don't already have it. The latest
+version is recommended. Install gopherjs with:
 
 ```
 go get -u github.com/gopherjs/gopherjs
 ```
 
+Finally, you will need to install the
+[gopherjs dom bindings](http://godoc.org/honnef.co/go/js/dom):
 
-Development Status
-------------------
-
-Form is still under development and is not yet ready for use. The first usable
-release will be version 0.1.0. If you are curious, feel free to poke around,
-but don't expect anything to work yet.
-
+```
+go get -u honnef.co/go/js/dom
+```
 
 Quickstart Guide
 ----------------
 
-Coming soon!
+### Parsing a Form
+
+The first thing you'll want to do is create a `Form` object. To do this, you can
+get an html form element using a query selector and then pass it as an argument
+to the [`Parse`](http://godoc.org/github.com/go-humble/form#Parse) function.
+
+```go
+// Use a query selector to get the form element.
+document := dom.GetWindow().Document()
+formEl := document.QuerySelector("#form")
+// Parse the form element and get a form.Form object in return.
+f, err := form.Parse(formEl)
+if err != nil {
+	// Handle err.
+}
+```
+
+### Validations
+
+You can validate the inputs in the form by using the `Validate` method.
+`Validate` expects an input name as an argument and returns an `InputValidation`
+object, which has chainable methods for validating a single input.
+
+Here's an example:
+
+```go
+// Validate the form inputs.
+f.Validate("name").Required()
+f.Validate("age").Required().IsInt().Greater(0).LessOrEqual(99)
+// Check if there were any validation errors.
+if f.HasErrors() {
+	for _, err := range fmr.Errors {
+		// Do something with each error.
+	}
+}
+```
+
+See the
+[documentation on the `InputValidation` type](http://godoc.org/github.com/go-humble/form#InputValidation)
+for more validation methods.
+
+### Getting Input Values
+
+You can use helper methods to get the value for an input and convert it to
+a go type. For example, here's how you can get the value for an input field
+named "age" converted to an int:
+
+```go
+age, err := f.GetInt("age")
+if err != nil {
+	// Handle err.
+}
+```
+
+See the
+[documentation on the `Form` type](http://godoc.org/github.com/go-humble/form#Form)
+for more helper methods.
+
+### Binding
+
+You can bind a form to any struct by using the
+[`Bind`](http://godoc.org/github.com/go-humble/form#Form.Bind) method. `Bind`
+compares the names of the fields of the struct to the names of the form inputs.
+When it finds a match, it attempts to set the value of the struct field to the
+input value.
+
+Suppose you had a form that looked like this:
+
+```html
+<form>
+	<input name="name" >
+	<input name="age" type="number" >
+</form>
+```
+
+And a `Person` struct with the following definition:
+
+```go
+type Person struct {
+	Name string
+	Age  int
+}
+```
+
+You could then bind the form to a `Person` using the `Bind` method:
+
+```go
+person := &Person{}
+if err := f.Bind(person); err != nil {
+	// Handle err.
+}
+```
+
+`Bind` creates a one-way, one-time binding. Changes to the form input values
+will not automatically update person, nor will changes to person automatically
+change the form input values.
+
+`Bind` supports most primative types and pointers to primative types. If your
+struct contains a type that is not supported, you can implement the
+[`Binder`](http://godoc.org/github.com/go-humble/form#Binder) or
+[`InputBinder`](http://godoc.org/github.com/go-humble/form#InputBinder)
+interfaces to define custom behavior.
 
 
 Testing
@@ -102,12 +201,12 @@ Contributing
 ------------
 
 See
-[CONTRIBUTING.md](https://github.com/go-humble/view/blob/master/CONTRIBUTING.md)
+[CONTRIBUTING.md](https://github.com/go-humble/form/blob/master/CONTRIBUTING.md)
 
 
 License
 -------
 
-View is licensed under the MIT License. See the
-[LICENSE](https://github.com/go-humble/view/blob/master/LICENSE) file for more
+Form is licensed under the MIT License. See the
+[LICENSE](https://github.com/go-humble/form/blob/master/LICENSE) file for more
 information.
