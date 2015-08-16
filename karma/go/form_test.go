@@ -695,6 +695,69 @@ func main() {
 			"target.Time was not correct.")
 	})
 
+	qunit.Test("BindWithPointers", func(assert qunit.QUnitAssert) {
+		defer reset()
+		// Create a form with some inputs and values.
+		container.SetInnerHTML(`<form>
+			<input name="string" value="foo" >
+			<input name="bytes" value="bar" >
+			<input type="number" name="int" value="4" >
+			<input type="number" name="int8" value="8" >
+			<input type="number" name="int16" value="15" >
+			<input type="number" name="int32" value="16" >
+			<input type="number" name="int64" value="23" >
+			<input type="number" name="uint" value="42" >
+			<input type="number" name="uint8" value="1" >
+			<input type="number" name="uint16" value="2" >
+			<input type="number" name="uint32" value="3" >
+			<input type="number" name="uint64" value="4" >
+			<input type="number" name="float32" value="39.7" >
+			<input type="number" name="float64" value="12.6" >
+			<input type="checkbox" name="bool" checked >
+			<input type="datetime" name="time" value="1985-12-03T23:59:34-08:00" >
+			</form>`)
+		formEl := container.QuerySelector("form")
+		form, err := form.Parse(formEl)
+		assertNoError(assert, err, "")
+		// Bind the form to some target and check the results.
+		target := struct {
+			String  *string
+			Bytes   *[]byte
+			Int     *int
+			Int8    *int8
+			Int16   *int16
+			Int32   *int32
+			Int64   *int64
+			Uint    *uint
+			Uint8   *uint8
+			Uint16  *uint16
+			Uint32  *uint32
+			Uint64  *uint64
+			Float32 *float32
+			Float64 *float64
+			Bool    *bool
+			Time    *time.Time
+		}{}
+		err = form.Bind(&target)
+		assertNoError(assert, err, "")
+		assert.Equal(*target.String, "foo", "target.String was not correct.")
+		assert.DeepEqual(*target.Bytes, []byte("bar"), "target.Bytes was not correct.")
+		assert.Equal(*target.Int, 4, "target.Int was not correct.")
+		assert.Equal(*target.Int8, 8, "target.Int8 was not correct.")
+		assert.Equal(*target.Int16, 15, "target.Int16 was not correct.")
+		assert.Equal(*target.Int32, 16, "target.Int32 was not correct.")
+		assert.Equal(*target.Int64, 23, "target.Int64 was not correct.")
+		assert.Equal(*target.Uint, 42, "target.Uint was not correct.")
+		assert.Equal(*target.Uint8, 1, "target.Uint8 was not correct.")
+		assert.Equal(*target.Uint16, 2, "target.Uint16 was not correct.")
+		assert.Equal(*target.Uint32, 3, "target.Uint32 was not correct.")
+		assert.Equal(*target.Uint64, 4, "target.Uint64 was not correct.")
+		assert.Equal(*target.Bool, true, "target.Bool was not correct.")
+		assert.DeepEqual(*target.Time,
+			mustParseTime(time.RFC3339, "1985-12-03T23:59:34-08:00"),
+			"target.Time was not correct.")
+	})
+
 	qunit.Test("Binder", func(assert qunit.QUnitAssert) {
 		defer reset()
 		// Create a form with some inputs and values.

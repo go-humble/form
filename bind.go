@@ -33,13 +33,14 @@ var inputBinderType = reflect.TypeOf([]InputBinder{}).Elem()
 // automatically change the form input values.
 //
 // The following struct field types are supported: string, []byte, int, int8,
-// int16, int32, int64, float32, float64, bool, time.Time, and pointers to any
-// of the preceding types. Bind attempts to match struct field names with input
-// names in a case-insensitive manner. So an input with a name attribute "foo"
-// will be assigned to the field v.Foo. Bind will simply ignore fields of v
-// which do not match any input names and input names which do not match any
-// fields of v. Because Bind uses reflection, only exported fields of v (those
-// which start with a capital letter) will be affected.
+// int16, int32, int64, uint, uint8, uint16, uint32, uint64, float32, float64,
+// bool, time.Time, and pointers to any of the preceding types. Bind attempts to
+// match struct field names with input names in a case-insensitive manner. So an
+// input with a name attribute "foo" will be assigned to the field v.Foo. Bind
+// will simply ignore fields of v which do not match any input names and input
+// names which do not match any fields of v. Because Bind uses reflection, only
+// exported fields of v (those which start with a capital letter) will be
+// affected.
 //
 // If v implements Binder, form.Bind will just call v.BindForm. Similarly if any
 // of the fields of v implement InputBinder, Bind will call BindInput on the
@@ -222,7 +223,7 @@ func bindFloat(fieldVal reflect.Value, underlyingType reflect.Type, input *Input
 func setUnderlyingFieldValue(fieldVal reflect.Value, val reflect.Value) {
 	for fieldVal.Kind() == reflect.Ptr {
 		if fieldVal.IsNil() {
-			fieldVal.Set(reflect.New(fieldVal.Type()))
+			fieldVal.Set(reflect.New(fieldVal.Type().Elem()))
 		}
 		fieldVal = fieldVal.Elem()
 	}
