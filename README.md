@@ -3,7 +3,7 @@ Humble/Form
 
 [![GoDoc](https://godoc.org/github.com/go-humble/form?status.svg)](https://godoc.org/github.com/go-humble/form)
 
-Version X.X.X (develop)
+Version 0.0.1
 
 A go package which provides functions for validating and serializing html forms.
 It is intended to be compiled to javascript via
