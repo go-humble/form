@@ -5,6 +5,7 @@
 
 package form
 
+// InputType is a value for the type attribute of an input element.
 type InputType string
 
 const (

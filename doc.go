@@ -6,6 +6,6 @@
 //
 // Version X.X.X (develop)
 //
-// For the full source code, a getting started guide, and more information visit
+// For the full source code, a quickstart guide, and more information visit
 // https://github.com/go-humble/form.
 package form
