@@ -6,6 +6,7 @@
 package main
 
 import (
+	"strings"
 	"time"
 
 	"github.com/go-humble/form"
@@ -27,6 +28,54 @@ func init() {
 
 func reset() {
 	container.SetInnerHTML("")
+}
+
+// CustomBinder implements form.Binder.
+type CustomBinder struct {
+	Int    int
+	String string
+}
+
+// BindForm implements the BindForm method of form.Binder. Instead of binding
+// the fields directly, We'll add 1 to the Int field and prepend a "_" to the
+// string field.
+func (b *CustomBinder) BindForm(form *form.Form) error {
+	if _, found := form.Inputs["int"]; found {
+		valInt, err := form.GetInt("int")
+		if err != nil {
+			return err
+		}
+		b.Int = valInt + 1
+	}
+	if _, found := form.Inputs["string"]; found {
+		valString, err := form.GetString("string")
+		if err != nil {
+			return err
+		}
+		b.String = "_" + valString
+	}
+	return nil
+}
+
+// Name is a custom type which implements form.InputBinder.
+type Name struct {
+	First string
+	Last  string
+}
+
+// BindInput implements the BindInput method of form.InputBinder. We split the
+// input into a first name and last name and assign each field of Name manually.
+func (name *Name) BindInput(input *form.Input) error {
+	names := strings.Split(input.RawValue, " ")
+	name.First = names[0]
+	name.Last = names[1]
+	return nil
+}
+
+// CustomInputBinder is a struct which has a single field of type Name. When we
+// call form.Bind on it, we expect Name.BindInput to be invoked.
+type CustomInputBinder struct {
+	Name Name
 }
 
 func main() {
@@ -531,7 +580,7 @@ func main() {
 		// Create a form with some inputs and values.
 		container.SetInnerHTML(`<form>
 			<input name="valid" value="true" >
-			<input type="checkbox" name="checkbox" checked>
+			<input type="checkbox" name="checkbox" checked >
 			<input name="invalid" value="foo" >
 			</form>`)
 		formEl := container.QuerySelector("form")
@@ -555,6 +604,94 @@ func main() {
 		assert.Equal(form.Errors[0].Error(), customMessage,
 			"Custom message was not set with IsBoolf")
 	})
+
+	qunit.Test("Bind", func(assert qunit.QUnitAssert) {
+		defer reset()
+		// Create a form with some inputs and values.
+		container.SetInnerHTML(`<form>
+			<input name="string" value="foo" >
+			<input name="bytes" value="bar" >
+			<input type="number" name="int" value="4" >
+			<input type="number" name="int8" value="8" >
+			<input type="number" name="int16" value="15" >
+			<input type="number" name="int32" value="16" >
+			<input type="number" name="int64" value="23" >
+			<input type="number" name="uint" value="42" >
+			<input type="number" name="uint8" value="1" >
+			<input type="number" name="uint16" value="2" >
+			<input type="number" name="uint32" value="3" >
+			<input type="number" name="uint64" value="4" >
+			<input type="number" name="float32" value="39.7" >
+			<input type="number" name="float64" value="12.6" >
+			<input type="checkbox" name="bool" checked >
+			<input type="datetime" name="time" value="1985-12-03T23:59:34-08:00" >
+			</form>`)
+		formEl := container.QuerySelector("form")
+		form, err := form.Parse(formEl)
+		assertNoError(assert, err, "")
+		// Bind the form to some target and check the results.
+		target := struct {
+			String  string
+			Bytes   []byte
+			Int     int
+			Int8    int8
+			Int16   int16
+			Int32   int32
+			Int64   int64
+			Float32 float32
+			Float64 float64
+			Bool    bool
+			Time    time.Time
+		}{}
+		err = form.Bind(&target)
+		assertNoError(assert, err, "")
+		assert.Equal(target.String, "foo", "target.String was not correct.")
+		assert.DeepEqual(target.Bytes, []byte("bar"), "target.Bytes was not correct.")
+		assert.Equal(target.Int, 4, "target.Int was not correct.")
+		assert.Equal(target.Int8, 8, "target.Int8 was not correct.")
+		assert.Equal(target.Int16, 15, "target.Int16 was not correct.")
+		assert.Equal(target.Int32, 16, "target.Int32 was not correct.")
+		assert.Equal(target.Int64, 23, "target.Int64 was not correct.")
+		assert.Equal(target.Bool, true, "target.Bool was not correct.")
+		assert.DeepEqual(target.Time,
+			mustParseTime(time.RFC3339, "1985-12-03T23:59:34-08:00"),
+			"target.Time was not correct.")
+	})
+
+	qunit.Test("Binder", func(assert qunit.QUnitAssert) {
+		defer reset()
+		// Create a form with some inputs and values.
+		container.SetInnerHTML(`<form>
+			<input name="string" value="foo" >
+			<input name="int" type="number" value="42" >
+			</form>`)
+		formEl := container.QuerySelector("form")
+		form, err := form.Parse(formEl)
+		assertNoError(assert, err, "")
+		// Bind the form to our CustomBinder type and check the results.
+		binder := &CustomBinder{}
+		err = form.Bind(binder)
+		assertNoError(assert, err, "")
+		assert.Equal(binder.String, "_foo", "binder.String was not correct.")
+		assert.Equal(binder.Int, 43, "binder.Int was not correct.")
+	})
+
+	qunit.Test("InputBinder", func(assert qunit.QUnitAssert) {
+		defer reset()
+		// Create a form with some inputs and values.
+		container.SetInnerHTML(`<form>
+			<input name="name" value="Foo Bar" >
+			</form>`)
+		formEl := container.QuerySelector("form")
+		form, err := form.Parse(formEl)
+		assertNoError(assert, err, "")
+		// Bind the form to our CustomInputBinder type and check the results.
+		binder := &CustomInputBinder{}
+		err = form.Bind(binder)
+		assertNoError(assert, err, "")
+		assert.Equal(binder.Name.First, "Foo", "binder.Name.First was not correct.")
+		assert.Equal(binder.Name.Last, "Bar", "binder.Name.Last was not correct.")
+	})
 }
 
 func mustParseTime(layout string, value string) time.Time {
@@ -572,5 +709,7 @@ func assertNoError(assert qunit.QUnitAssert, err error, msg string) {
 		} else {
 			assert.Equal(err, nil, msg+"\n"+err.Error())
 		}
+	} else {
+		assert.Equal(err, nil, "")
 	}
 }
