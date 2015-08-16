@@ -148,6 +148,11 @@ func bindInput(fieldType reflect.Type, fieldVal reflect.Value, input *Input) err
 			return err
 		}
 		return nil
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		if err := bindUint(fieldVal, underlyingType, input); err != nil {
+			return err
+		}
+		return nil
 	case reflect.Float32, reflect.Float64:
 		if err := bindFloat(fieldVal, underlyingType, input); err != nil {
 			return err
@@ -188,7 +193,19 @@ func bindInt(fieldVal reflect.Value, underlyingType reflect.Type, input *Input) 
 	return nil
 }
 
-// bindInt assumes that the field is an float type (float32, float64) and
+// bindUint assumes that the field is an uint type (uint, uint8, uint16, uint32,
+// or uint64) and attempts to bind the input to the field.
+func bindUint(fieldVal reflect.Value, underlyingType reflect.Type, input *Input) error {
+	valUint, err := input.Uint()
+	if err != nil {
+		return err
+	}
+	sizedUint := reflect.ValueOf(valUint).Convert(underlyingType)
+	setUnderlyingFieldValue(fieldVal, sizedUint)
+	return nil
+}
+
+// bindFloat assumes that the field is an float type (float32, float64) and
 // attempts to bind the input to the field.
 func bindFloat(fieldVal reflect.Value, underlyingType reflect.Type, input *Input) error {
 	valFloat, err := input.Float()

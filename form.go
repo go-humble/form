@@ -67,6 +67,14 @@ func (form *Form) GetInt(inputName string) (int, error) {
 	return input.Int()
 }
 
+func (form *Form) GetUint(inputName string) (uint, error) {
+	input, found := form.Inputs[inputName]
+	if !found {
+		return 0, NewInputNotFoundError(inputName)
+	}
+	return input.Uint()
+}
+
 func (form *Form) GetFloat(inputName string) (float64, error) {
 	input, found := form.Inputs[inputName]
 	if !found {

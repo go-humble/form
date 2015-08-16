@@ -41,6 +41,14 @@ func (input Input) Int() (int, error) {
 	return strconv.Atoi(input.RawValue)
 }
 
+func (input Input) Uint() (uint, error) {
+	u, err := strconv.ParseUint(input.RawValue, 10, 64)
+	if err != nil {
+		return 0, err
+	}
+	return uint(u), nil
+}
+
 func (input Input) Float() (float64, error) {
 	return strconv.ParseFloat(input.RawValue, 64)
 }

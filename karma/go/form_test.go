@@ -121,7 +121,7 @@ func main() {
 		container.SetInnerHTML(`<form>
 			<input name="default" value="23" >
 			<input type="tel" name="tel" value="8675309" >
-			<input type="text" name="text" value="789" >
+			<input type="text" name="text" value="-789" >
 			<input type="number" name="number" value="123456789" >
 			</form>`)
 		formEl := container.QuerySelector("form")
@@ -130,12 +130,39 @@ func main() {
 		expectedValues := map[string]int{
 			"default": 23,
 			"tel":     8675309,
-			"text":    789,
+			"text":    -789,
 			"number":  123456789,
 		}
 		// Check that the parsed value for each input is correct.
 		for name, expectedValue := range expectedValues {
 			got, err := form.GetInt(name)
+			assertNoError(assert, err, "")
+			assert.Equal(got, expectedValue, "Incorrect value for field: "+name)
+		}
+	})
+
+	qunit.Test("GetUint", func(assert qunit.QUnitAssert) {
+		defer reset()
+		// Create a form with some inputs and values. All the input types here
+		// should be convertible to uints via GetUint.
+		container.SetInnerHTML(`<form>
+			<input name="default" value="23" >
+			<input type="tel" name="tel" value="8675309" >
+			<input type="text" name="text" value="789" >
+			<input type="number" name="number" value="123456789" >
+			</form>`)
+		formEl := container.QuerySelector("form")
+		form, err := form.Parse(formEl)
+		assertNoError(assert, err, "")
+		expectedValues := map[string]uint{
+			"default": 23,
+			"tel":     8675309,
+			"text":    789,
+			"number":  123456789,
+		}
+		// Check that the parsed value for each input is correct.
+		for name, expectedValue := range expectedValues {
+			got, err := form.GetUint(name)
 			assertNoError(assert, err, "")
 			assert.Equal(got, expectedValue, "Incorrect value for field: "+name)
 		}
@@ -638,6 +665,11 @@ func main() {
 			Int16   int16
 			Int32   int32
 			Int64   int64
+			Uint    uint
+			Uint8   uint8
+			Uint16  uint16
+			Uint32  uint32
+			Uint64  uint64
 			Float32 float32
 			Float64 float64
 			Bool    bool
@@ -652,6 +684,11 @@ func main() {
 		assert.Equal(target.Int16, 15, "target.Int16 was not correct.")
 		assert.Equal(target.Int32, 16, "target.Int32 was not correct.")
 		assert.Equal(target.Int64, 23, "target.Int64 was not correct.")
+		assert.Equal(target.Uint, 42, "target.Uint was not correct.")
+		assert.Equal(target.Uint8, 1, "target.Uint8 was not correct.")
+		assert.Equal(target.Uint16, 2, "target.Uint16 was not correct.")
+		assert.Equal(target.Uint32, 3, "target.Uint32 was not correct.")
+		assert.Equal(target.Uint64, 4, "target.Uint64 was not correct.")
 		assert.Equal(target.Bool, true, "target.Bool was not correct.")
 		assert.DeepEqual(target.Time,
 			mustParseTime(time.RFC3339, "1985-12-03T23:59:34-08:00"),
