@@ -4,7 +4,7 @@
 // great as a stand-alone package or in combination with other Humble packages
 // (https://github.com/go-humble).
 //
-// Version 0.0.1
+// Version 0.0.2
 //
 // For the full source code, a quickstart guide, and more information visit
 // https://github.com/go-humble/form.
